@@ -24,24 +24,27 @@ class AppFixtures extends Fixture
             $manager->persist($product);
         }
 
-        for ($i=0; $i < 10; $i++) {
-            $user = new User();
-            $user->setUserName('User'. $i);
-            $user->setPassword(hash('sha256', 'password' . $i));
-            $user->setEmail('user'.$i.'@example.com');
-            $manager->persist($user);
-        }
-
+        $listeUser = [];
         for ($i=0; $i < 10; $i++) {
             $client = new Client();
             $client->setUserName('Client'. $i);
             $client->setEmail('client'.$i.'@example.com');
             $client->setAdresse('Adresse '. $i);
             $client->setApiKey(bin2hex(random_bytes(10)));
+
+            $listeUser[] = $client;
             $manager->persist($client);
         }
-            
 
+        for ($i=0; $i < 10; $i++) {
+            $user = new User();
+            $user->setUserName('User'. $i);
+            $user->setPassword(hash('sha256', 'password' . $i));
+            $user->setEmail('user'.$i.'@example.com');
+
+            $user->setClient($listeUser[mt_rand(0, 9)]);
+            $manager->persist($user);
+        }
 
         $manager->flush();
     }
