@@ -21,8 +21,8 @@ class User
 
     #[ORM\Column(length: 255)]
     private ?string $email = null;
-
-    #[ORM\ManyToOne(inversedBy: 'users')]
+    
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: Client::class)]
     private ?Client $client = null;
 
     public function getId(): ?int
