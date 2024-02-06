@@ -30,6 +30,10 @@ class AppFixtures extends Fixture
             $user->setPassword(hash('sha256', 'password' . $i));
             $user->setEmail('user'.$i.'@example.com');
             $manager->persist($user);
+<<<<<<< Updated upstream
+=======
+            
+>>>>>>> Stashed changes
         }
 
         for ($i=0; $i < 10; $i++) {
@@ -38,6 +42,10 @@ class AppFixtures extends Fixture
             $client->setEmail('client'.$i.'@example.com');
             $client->setAdresse('Adresse '. $i);
             $client->setApiKey(bin2hex(random_bytes(10)));
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
             $manager->persist($client);
         }
             
