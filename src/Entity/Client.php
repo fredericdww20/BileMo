@@ -27,7 +27,7 @@ class Client
     #[ORM\Column(length: 255)]
     private ?string $apiKey = null;
 
-    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'clients')]
+    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'client')]
     private Collection $users;
 
     public function __construct()
