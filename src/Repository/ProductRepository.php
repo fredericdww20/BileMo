@@ -26,6 +26,11 @@ class ProductRepository extends ServiceEntityRepository
         return $this->findAll();
     }
 
+    public function getProductById(int $id): ?Product
+    {
+        return $this->find($id);
+    }
+
 //    /**
 //     * @return Product[] Returns an array of Product objects
 //     */
