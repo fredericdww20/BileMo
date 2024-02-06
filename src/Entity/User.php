@@ -22,7 +22,7 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $email = null;
 
-    #[ORM\ManyToOne(inversedBy: 'users')]
+    #[ORM\OneToMany(targetEntity: Client::class, mappedBy: 'user')]
     private ?Client $client = null;
 
     public function getId(): ?int
