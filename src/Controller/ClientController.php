@@ -8,9 +8,11 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ClientController extends AbstractController
 {
-    #[Route('/api/login_check', name: 'app_login', methods: ['POST'])]
-public function login(): JsonResponse
-{
-    
-}
+    #[Route('/client', name: 'app_client')]
+    public function index(): Response
+    {
+        return $this->render('client/index.html.twig', [
+            'controller_name' => 'ClientController',
+        ]);
+    }
 }
