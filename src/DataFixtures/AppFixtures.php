@@ -39,7 +39,7 @@ class AppFixtures extends Fixture
         for ($i=0; $i < 10; $i++) {
             $user = new User();
             $user->setUserName('User'. $i);
-            $user->setPassword(hash('sha256', 'password' . $i));
+            $user->setPassword(password_hash('password'.$i, PASSWORD_BCRYPT));
             $user->setEmail('user'.$i.'@example.com');
 
             $user->setClient($usersId[array_rand($usersId)]);
