@@ -30,6 +30,9 @@ class Client
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'clients')]
     private Collection $users;
 
+    #[ORM\Column(length: 45)]
+    private ?string $password = null;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();
@@ -114,6 +117,18 @@ class Client
                 $user->setClient(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
 
         return $this;
     }

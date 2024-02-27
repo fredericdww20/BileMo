@@ -17,9 +17,6 @@ class User
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $password = null;
-
-    #[ORM\Column(length: 255)]
     private ?string $email = null;
     
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: Client::class)]
@@ -38,18 +35,6 @@ class User
     public function setUsername(string $username): static
     {
         $this->username = $username;
-
-        return $this;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): static
-    {
-        $this->password = $password;
 
         return $this;
     }
