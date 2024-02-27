@@ -7,11 +7,13 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 
 #[ORM\Entity(repositoryClass: ClientRepository::class)]
 
-class Client implements PasswordAuthenticatedUserInterface
+class Client implements UserInterface, PasswordAuthenticatedUserInterface
+
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -134,6 +136,34 @@ class Client implements PasswordAuthenticatedUserInterface
         $this->password = $password;
 
         return $this;
+    }
+    
+    public function getRoles(): array
+    {
+        // Retourne les rôles accordés à l'utilisateur
+        // Par exemple, retourner un tableau avec un rôle par défaut
+        return [
+            'ROLE_USER',
+            'ROLE_ADMIN',
+            'ROLE_SUPER_ADMIN',
+            'ROLE_API',
+            'ROLE_CLIENT'
+
+        ];
+    }
+
+   
+    public function eraseCredentials()
+    {
+        // Si vous stockez des données sensibles temporairement sur l'utilisateur, effacez-les ici
+    }
+
+    // Assurez-vous que les méthodes getPassword() et getUsername() (ou getUserIdentifier() pour Symfony 5.3+) sont déjà implémentées.
+    public function getUserIdentifier(): string
+    {
+        // Cette méthode est préférée comme identifiant principal de l'utilisateur dans Symfony 5.3+
+        // Elle peut simplement retourner le username, l'email, ou tout autre champ unique
+        return $this->email;
     }
 }
 

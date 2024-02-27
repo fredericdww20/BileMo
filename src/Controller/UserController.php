@@ -11,6 +11,7 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 
 class UserController extends AbstractController
@@ -18,6 +19,7 @@ class UserController extends AbstractController
     #[Route('/api/usersall', name: 'books', methods: ['GET'])]
     public function getAllUser(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
     {
+        
         $bookList = $userRepository->findAll();
 
         $jsonBookList = $serializer->serialize($bookList, 'json', ['groups' => 'getBooks']);
@@ -27,6 +29,7 @@ class UserController extends AbstractController
     #[Route('/api/client/{clientId}', name: 'detailBook', methods: ['GET'])]
     public function listForClient(int $clientId, UserRepository $userRepository, SerializerInterface $serializer): Response
     {
+
         
         $users = $userRepository->findByClient($clientId);
 
@@ -42,6 +45,7 @@ class UserController extends AbstractController
 
         $json = $serializer->serialize($users, 'json', $context);
 
-        return new JsonResponse($json, Response::HTTP_OK, [], true);}
+        return new JsonResponse($json, Response::HTTP_OK, [], true);
+    }
 }
 
