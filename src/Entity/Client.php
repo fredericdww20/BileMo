@@ -18,6 +18,9 @@ class Client
     #[ORM\Column(length: 255)]
     private ?string $username = null;
 
+    #[ORM\Column(length: 45)]
+    private ?string $password = null;
+
     #[ORM\Column(length: 255)]
     private ?string $email = null;
 
@@ -27,11 +30,8 @@ class Client
     #[ORM\Column(length: 255)]
     private ?string $apiKey = null;
 
-    #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'client')]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'clients')]
     private Collection $users;
-
-    #[ORM\Column(length: 45)]
-    private ?string $password = null;
 
     public function __construct()
     {
@@ -120,4 +120,17 @@ class Client
 
         return $this;
     }
+
+    public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+
+        return $this;
+    }
 }
+
