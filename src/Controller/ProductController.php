@@ -36,7 +36,6 @@ class ProductController extends AbstractController
         $jsonProduct = $serializer->serialize($product, 'json');
         $response = new JsonResponse($jsonProduct, Response::HTTP_OK, [], true);
         
-
         $response->setPublic();
         $response->setMaxAge(3600); 
         
