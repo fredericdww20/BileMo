@@ -7,9 +7,17 @@ use App\Entity\User;
 use App\Entity\Client;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
 
 class AppFixtures extends Fixture
 {
+    private $passwordHasher;
+
+    public function __construct(UserPasswordHasherInterface $passwordHasher)
+    {
+        $this->passwordHasher = $passwordHasher;
+    }
     public function load(ObjectManager $manager): void
     {
         for ($i=0; $i < 10; $i++) {
@@ -29,7 +37,12 @@ class AppFixtures extends Fixture
             $client = new Client();
             $client->setUserName('Client'. $i);
             $client->setEmail('client'.$i.'@example.com');
-            $client->setAdresse('Adresse '. $i);
+            
+            $plainPassword = "secretPassword123";
+            $hashedPassword = $this->passwordHasher->hashPassword($client, $plainPassword);
+            
+            $client->setPassword($hashedPassword);
+            $client->setAdresse('Adresse ' . $i);
             $client->setApiKey(bin2hex(random_bytes(10)));
             $manager->persist($client);
 
@@ -39,9 +52,7 @@ class AppFixtures extends Fixture
         for ($i=0; $i < 10; $i++) {
             $user = new User();
             $user->setUserName('User'. $i);
-            $user->setPassword(password_hash('password'.$i, PASSWORD_BCRYPT));
             $user->setEmail('user'.$i.'@example.com');
-
             $user->setClient($usersId[array_rand($usersId)]);
             $manager->persist($user);
         }
