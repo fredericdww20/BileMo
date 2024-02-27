@@ -30,6 +30,9 @@ class Client
     #[ORM\OneToMany(targetEntity: User::class, mappedBy: 'client')]
     private Collection $users;
 
+    #[ORM\Column(length: 45)]
+    private ?string $password = null;
+
     public function __construct()
     {
         $this->users = new ArrayCollection();

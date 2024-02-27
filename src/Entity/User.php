@@ -19,12 +19,14 @@ class User
     #[Groups(['getUser'])]
     private ?string $username = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 255
+  
     #[Groups(['getUser'])]
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
     #[Groups(['getUser'])]
+
     private ?string $email = null;
 
     #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'user')]
@@ -48,18 +50,6 @@ class User
         return $this;
     }
 
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): static
-    {
-        $this->password = $password;
-
-        return $this;
-    }
-
     public function getEmail(): ?string
     {
         return $this->email;
@@ -71,6 +61,19 @@ class User
 
         return $this;
     }
+  
+  public function getPassword(): ?string
+    {
+        return $this->password;
+    }
+
+    public function setPassword(string $password): static
+    {
+        $this->password = $password;
+
+        return $this;
+    }
+}
 
     public function getClient(): ?Client
     {
