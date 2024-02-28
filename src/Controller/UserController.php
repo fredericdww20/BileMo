@@ -30,7 +30,6 @@ class UserController extends AbstractController
     public function listForClient(int $clientId, UserRepository $userRepository, SerializerInterface $serializer): Response
     {
 
-        
         $users = $userRepository->findByClient($clientId);
 
         if (empty($users)) {

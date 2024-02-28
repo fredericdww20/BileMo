@@ -140,15 +140,10 @@ class Client implements UserInterface, PasswordAuthenticatedUserInterface
     
     public function getRoles(): array
     {
-        // Retourne les rôles accordés à l'utilisateur
-        // Par exemple, retourner un tableau avec un rôle par défaut
-        return [
-            'ROLE_USER',
-            'ROLE_ADMIN',
-            'ROLE_SUPER_ADMIN',
-            'ROLE_API',
-            'ROLE_CLIENT'
 
+        return [
+            'IS_AUTHENTICATED_FULLY',
+            
         ];
     }
 
