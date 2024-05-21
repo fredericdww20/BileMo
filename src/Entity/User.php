@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User
@@ -11,9 +12,11 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups("user_detail")]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups("user_detail")]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]

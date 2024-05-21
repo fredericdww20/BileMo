@@ -105,7 +105,7 @@ class UserController extends AbstractController
      * )
      * @OA\Tag(name="User")
      */
-    #[Route('/api/user', name: 'createUser', methods: ['POST'])]
+    #[Route('/api/users', name: 'createUser', methods: ['POST'])]
     public function createUser(Request $request, SerializerInterface $serializer, ValidatorInterface $validator, EntityManagerInterface $entityManager, ClientRepository $clientRepository): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -124,5 +124,62 @@ class UserController extends AbstractController
 
         $jsonUser = $serializer->serialize($user, 'json');
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, [], true);
+    }
+
+    // fonction qui récuper un utilisateur par son id
+    /**
+     * Récupère un utilisateur par son ID.
+     *
+     * Cette méthode retourne un utilisateur spécifique par son ID.
+     *
+     * @Route("/api/user/{id}", methods={"GET"})
+     * @OA\Response(
+     *     response=200,
+     *     description="Retourne un utilisateur spécifique par son ID",
+     *     @OA\JsonContent(
+     *        type="object",
+     *        @OA\Items(ref=@Model(type=User::class))
+     *     )
+     * )
+     * @OA\Tag(name="User")
+     */
+    // src/Controller/UserController.php
+
+    #[Route('/api/user/{id}', name: 'detailUser', methods: ['GET'])]
+    public function getUserById(int $id, EntityManagerInterface $entityManager, SerializerInterface $serializer): JsonResponse
+    {
+        // Vérification du token (automatique via firewall Symfony)
+
+        // Récupérer l'utilisateur par son ID
+        $user = $entityManager->getRepository(User::class)->find($id);
+
+        if (!$user) {
+            return new JsonResponse(['error' => 'Utilisateur non trouve'], Response::HTTP_BAD_REQUEST);
+        }
+
+        // Récupérer le client actuel (via l'utilisateur authentifié)
+        $currentUser = $this->getUser();
+
+        // Assurez-vous que l'utilisateur authentifié est de la classe Client
+        if (!$currentUser instanceof Client) {
+            return new JsonResponse(['error' => 'Acces refuse'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        // Vérifier l'appartenance de l'utilisateur au client
+        if ($user->getClient() !== $currentUser) {
+            return new JsonResponse(['error' => 'Cette utilisateur appartient pas au client'], Response::HTTP_FORBIDDEN);
+        }
+
+        // Sérialiser l'utilisateur
+        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'user_detail']);
+        $userData = json_decode($jsonUser, true);
+
+        // Construire la réponse avec le message de succès et les informations de l'utilisateur
+        $response = [
+            'Message' => 'Succes, voici les informations de cette utilisateur',
+            'Utilisateur' => $userData
+        ];
+
+        return new JsonResponse($response, Response::HTTP_OK);
     }
 }
