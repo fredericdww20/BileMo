@@ -23,6 +23,10 @@ class UserController extends AbstractController
 {
 
     /**
+     * Affiche la liste des utilisateurs inscrits liés à un client.
+     * 
+     * Cette méthode retourne la liste des utilisateurs inscrits liés à un client spécifique.
+     * 
      * @OA\Response(
      *     response=200,
      *     description="Retourne la liste des utilisateurs d'un client spécifique par son ID",
