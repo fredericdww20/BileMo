@@ -21,7 +21,6 @@ class ProductController extends AbstractController
      *
      * Cette méthode retourne une liste de tous les produits disponibles.
      *
-     * @Route("/api/product", methods={"GET"})
      * @OA\Response(
      *     response=200,
      *     description="Retourne la liste de tous les produits",
@@ -32,7 +31,7 @@ class ProductController extends AbstractController
      * )
      * @OA\Tag(name="Product")
      */
-    #[Route('api/product', name: 'app_product', methods: ['GET'])]
+    #[Route('api/products', name: 'app_product', methods: ['GET'])]
     public function getAllProduct(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
     {
         $productlist = $productRepository->getAllProduct();
@@ -52,7 +51,6 @@ class ProductController extends AbstractController
      *
      * Cette méthode retourne les détails d'un produit spécifique par son ID.
      *
-     * @Route("/api/product/{id}", methods={"GET"})
      * @OA\Response(
      *     response=200,
      *     description="Retourne les détails du produit",
@@ -71,7 +69,7 @@ class ProductController extends AbstractController
      * @OA\Tag(name="Product")
      * @Security(name="Bearer")
      */
-    #[Route('api/product/{id}', name: 'app_product_id', methods: ['GET'])]
+    #[Route('api/products/{id}', name: 'app_product_id', methods: ['GET'])]
     public function getProductById(Product $product, SerializerInterface $serializer): JsonResponse
     {
         $jsonProduct = $serializer->serialize($product, 'json');
@@ -89,7 +87,6 @@ class ProductController extends AbstractController
      * Cette méthode permet de mettre à jour les détails d'un produit existant. 
      * Elle accepte un corps de requête JSON contenant les nouveaux attributs du produit.
      *
-     * @Route("/api/productupdate/{id}", methods={"PUT"})
      * @OA\RequestBody(
      *     required=true,
      *     description="Les données du produit à mettre à jour",
@@ -119,7 +116,7 @@ class ProductController extends AbstractController
      * @OA\Tag(name="Product")
      * @Security(name="Bearer")
      */
-    #[Route('api/productupdate/{id}', name: 'app_product_update', methods: ['PUT'])]
+    #[Route('api/products/{id}', name: 'app_product_update', methods: ['PUT'])]
     public function updateProduct(Request $request, Product $product, SerializerInterface $serializer, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -154,8 +151,6 @@ class ProductController extends AbstractController
      * Cette méthode permet de créer un nouveau produit.
      * Elle accepte un corps de requête JSON contenant les attributs du nouveau produit.
      * 
-     *
-     * @Route("/api/createproduct", methods={"POST"})
      * @OA\RequestBody(
      *     required=true,
      *     description="Les données du produit à mettre à jour",
@@ -221,8 +216,6 @@ class ProductController extends AbstractController
      * Cette méthode permet de supprimer un produit existant.
      * Elle accepte un ID de produit et supprime le produit correspondant.
      * 
-     *
-     * @Route("/api/deleteproduct/{id}", methods={"DELETE"})
      * @OA\RequestBody(
      *     required=true,
      *     description="Les données du produit à mettre à jour",
@@ -252,7 +245,7 @@ class ProductController extends AbstractController
      * @OA\Tag(name="Product")
      * @Security(name="Bearer")
      */
-    #[Route('api/deleteproduct/{id}', name: 'app_product_delete', methods: ['DELETE'])]
+    #[Route('api/products/{id}', name: 'app_product_delete', methods: ['DELETE'])]
     public function deleteProduct(Product $product, EntityManagerInterface $entityManager): JsonResponse
     {
         $entityManager->remove($product);
