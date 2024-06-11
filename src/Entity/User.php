@@ -11,6 +11,7 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+<<<<<<< Updated upstream
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
@@ -20,6 +21,17 @@ class User
     private ?string $password = null;
 
     #[ORM\Column(length: 255)]
+=======
+    #[Groups(["user_detail", "client_users"])]
+    private ?int $id = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(["user_detail", "client_users"])]
+    private ?string $username = null;
+
+    #[ORM\Column(length: 255)]
+    #[Groups(["user_detail", "client_users"])]
+>>>>>>> Stashed changes
     private ?string $email = null;
 
     #[ORM\ManyToOne(inversedBy: 'users')]
