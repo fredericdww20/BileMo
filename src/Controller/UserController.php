@@ -20,7 +20,40 @@ use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 class UserController extends AbstractController
 {
-   
+    /**
+     * Retourne la liste de tous les utilisateurs.
+     *
+     * Cette méthode retourne une liste de tous les utilisateurs disponibles.
+     * 
+     * @OA\Response(
+     *     response=200,
+     *     description="Retourne la liste de tous les utilisateurs",
+     *     @OA\JsonContent(ref=@Model(type=Product::class))
+     * )
+     * @OA\Parameter(
+     *     name="id",
+     *     in="path",
+     *     required=true,
+     *     @OA\Schema(type="integer")
+     * )
+     * @OA\Tag(name="Product")
+     * @Security(name="Bearer")
+     */
+    #[Route('/api/users', name: 'users', methods: ['GET'])]
+    public function getAllUser(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
+    {
+
+        $bookList = $userRepository->findAll();
+
+        $jsonBookList = $serializer->serialize($bookList, 'json', ['groups' => 'getUsers']);
+        return new JsonResponse($jsonBookList, Response::HTTP_OK, [], true);
+    }
+
+    // delete cette fonction
+    //
+
+
+
     /**
      * Récupère la liste des utilisateurs d'un client par son ID.
      *
