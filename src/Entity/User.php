@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 class User
@@ -11,30 +12,17 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-<<<<<<< Updated upstream
+    #[Groups("user_detail")]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups("user_detail")]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
-    private ?string $password = null;
-
-    #[ORM\Column(length: 255)]
-=======
-    #[Groups(["user_detail", "client_users"])]
-    private ?int $id = null;
-
-    #[ORM\Column(length: 255)]
-    #[Groups(["user_detail", "client_users"])]
-    private ?string $username = null;
-
-    #[ORM\Column(length: 255)]
-    #[Groups(["user_detail", "client_users"])]
->>>>>>> Stashed changes
     private ?string $email = null;
-
-    #[ORM\ManyToOne(inversedBy: 'users')]
+    
+    #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'users')]
     private ?Client $client = null;
 
     public function getId(): ?int
@@ -50,18 +38,6 @@ class User
     public function setUsername(string $username): static
     {
         $this->username = $username;
-
-        return $this;
-    }
-
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): static
-    {
-        $this->password = $password;
 
         return $this;
     }
