@@ -15,80 +15,67 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use OpenApi\Annotations as OA;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 
 class UserController extends AbstractController
 {
-    /**
-     * Retourne la liste de tous les utilisateurs.
-     *
-     * Cette méthode retourne une liste de tous les utilisateurs disponibles.
-     * 
-     * @OA\Response(
-     *     response=200,
-     *     description="Retourne la liste de tous les utilisateurs",
-     *     @OA\JsonContent(ref=@Model(type=Product::class))
-     * )
-     * @OA\Parameter(
-     *     name="id",
-     *     in="path",
-     *     required=true,
-     *     @OA\Schema(type="integer")
-     * )
-     * @OA\Tag(name="Product")
-     * @Security(name="Bearer")
-     */
-    #[Route('/api/users', name: 'users', methods: ['GET'])]
-    public function getAllUser(UserRepository $userRepository, SerializerInterface $serializer): JsonResponse
-    {
-
-        $bookList = $userRepository->findAll();
-
-        $jsonBookList = $serializer->serialize($bookList, 'json', ['groups' => 'getUsers']);
-        return new JsonResponse($jsonBookList, Response::HTTP_OK, [], true);
-    }
-
-    // delete cette fonction
-    //
-
-
 
     /**
-     * Récupère la liste des utilisateurs d'un client par son ID.
-     *
-     * Cette méthode retourne la liste des utilisateurs d'un client spécifique par son ID.
-     *
-     * @OA\Response(
-     *     response=200,
-     *     description="Retourne la liste des utilisateurs d'un client spécifique par son ID",
-     *     @OA\JsonContent(
-     *        type="object",
-     *        @OA\Items(ref=@Model(type=User::class))
-     *     )
-     * )
-     * @OA\Tag(name="User")
-     */
-    #[Route('/api/client/{clientId}', name: 'detailUser', methods: ['GET'])]
-    public function listForClient(int $clientId, UserRepository $userRepository, SerializerInterface $serializer): Response
-    {
-
-        $users = $userRepository->findByClient($clientId);
-
-        if (empty($users)) {
-            return new JsonResponse(['error' => 'Aucun utilisateur correspondant'], Response::HTTP_NOT_FOUND);
-        }
-
-        $context = [
-            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
-                return $object->getId();
-            },
-        ];
-
-        $json = $serializer->serialize($users, 'json', $context);
-
-        return new JsonResponse($json, Response::HTTP_OK, [], true);
+ * @OA\Response(
+ *     response=200,
+ *     description="Retourne la liste des utilisateurs d'un client spécifique par son ID",
+ *     @OA\JsonContent(
+ *        type="object",
+ *        @OA\Items(ref=@Model(type=User::class))
+ *     )
+ * )
+ * @OA\Tag(name="User")
+ */
+#[Route('/api/client/{clientId}', name: 'listForClient', methods: ['GET'])]
+public function listForClient(int $clientId, UserRepository $userRepository, SerializerInterface $serializer): Response
+{
+    // Récupérer le client authentifié
+    $currentClient = $this->getUser();
+    if (!$currentClient instanceof Client) {
+        return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_UNAUTHORIZED);
     }
+
+    // Vérifier que le client authentifié correspond bien au client demandé
+    if ($currentClient->getId() !== $clientId) {
+        return new JsonResponse(['error' => 'Accès interdit'], Response::HTTP_FORBIDDEN);
+    }
+
+    // Récupérer la liste des utilisateurs pour ce client spécifique
+    $users = $userRepository->findBy(['client' => $clientId]);
+
+    // Vérifier si aucun utilisateur n'a été trouvé
+    if (empty($users)) {
+        return new JsonResponse(['error' => 'Aucun utilisateur correspondant'], Response::HTTP_NOT_FOUND);
+    }
+
+    // Contexte pour gérer les références circulaires lors de la sérialisation et utiliser les groupes de sérialisation
+    $context = [
+        AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
+            return $object->getId();
+        },
+        'groups' => ['client_users'], // Utiliser le groupe de sérialisation "client_users"
+        'json_encode_options' => JSON_PRETTY_PRINT
+    ];
+
+    // Sérialiser la liste des utilisateurs en JSON avec JSON_PRETTY_PRINT pour un formatage lisible
+    $jsonUsers = $serializer->serialize($users, 'json', $context);
+
+    // Construire une réponse structurée
+    $response = [
+        'message' => 'Succès, voici la liste des utilisateurs',
+        'data' => json_decode($jsonUsers, true) // Conserver les données en tant qu'objet JSON
+    ];
+
+    // Retourner la réponse JSON avec la liste des utilisateurs
+    return new JsonResponse($response, Response::HTTP_OK);
+}
 
     /**
      * Crée un nouvel utilisateur.

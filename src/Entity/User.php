@@ -12,14 +12,15 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    #[Groups("user_detail")]
+    #[Groups(["user_detail", "client_users"])]
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups("user_detail")]
+    #[Groups(["user_detail", "client_users"])]
     private ?string $username = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(["user_detail", "client_users"])]
     private ?string $email = null;
     
     #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'users')]
