@@ -12,8 +12,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
-use JMS\Serializer\SerializerInterface;
-use JMS\Serializer\SerializationContext;
+use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use OpenApi\Annotations as OA;
@@ -24,10 +23,6 @@ class UserController extends AbstractController
 {
 
     /**
-     * Affiche la liste des utilisateurs inscrits liés à un client.
-     * 
-     * Cette méthode retourne la liste des utilisateurs inscrits liés à un client spécifique.
-     * 
      * @OA\Response(
      *     response=200,
      *     description="Retourne la liste des utilisateurs d'un client spécifique par son ID",
@@ -72,7 +67,6 @@ class UserController extends AbstractController
         ];
 
         // Sérialiser la liste des utilisateurs en JSON avec JSON_PRETTY_PRINT pour un formatage lisible
-        $context = SerializationContext::create()->setGroups(['client_users']);
         $jsonUsers = $serializer->serialize($users, 'json', $context);
 
         // Construire une réponse structurée
@@ -153,8 +147,7 @@ class UserController extends AbstractController
         $entityManager->flush();
 
         // Sérialiser l'utilisateur et renvoyer la réponse
-        $context = SerializationContext::create()->setGroups(['user_detail']);
-        $jsonUser = $serializer->serialize($user, 'json', $context);
+        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'user_detail']);
         return new JsonResponse($jsonUser, Response::HTTP_CREATED, [], true);
     }
 
@@ -203,8 +196,7 @@ class UserController extends AbstractController
         }
 
         // Sérialiser l'utilisateur
-        $context = SerializationContext::create()->setGroups(['user_detail']);
-        $jsonUser = $serializer->serialize($user, 'json', $context);
+        $jsonUser = $serializer->serialize($user, 'json', ['groups' => 'user_detail']);
         $userData = json_decode($jsonUser, true);
 
         // Construire la réponse avec le message de succès et les informations de l'utilisateur
