@@ -203,7 +203,7 @@ class ProductController extends AbstractController
      * @OA\Tag(name="Product")
      * @Security(name="Bearer")
      */
-    #[Route('api/createproduct', name: 'app_product_create', methods: ['POST'])]
+    #[Route('api/products', name: 'app_product_create', methods: ['POST'])]
     public function createProduct(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
