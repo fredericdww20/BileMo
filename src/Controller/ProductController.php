@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Product;
+use App\Service\HateoasService;
 use App\Repository\ProductRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,6 +17,12 @@ use Symfony\Component\HttpFoundation\Request;
 
 class ProductController extends AbstractController
 {
+    private $hateoas;
+
+    public function __construct(HateoasService $hateoas)
+    {
+        $this->hateoas = $hateoas;
+    }
     /**
      * Retourne la liste de tous les produits.
      *
@@ -35,8 +42,14 @@ class ProductController extends AbstractController
     public function getAllProduct(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
     {
         $productlist = $productRepository->getAllProduct();
+        $data = array_map(function($product) {
+            return $this->hateoas->addLinks($product, [
+                'self' => ['name' => 'app_product_id', 'params' => ['id' => $product->getId()]],
+                'list' => ['name' => 'app_product']
+            ]);
+        }, $productlist);
 
-        $jsonproductlist = $serializer->serialize($productlist, 'json');
+        $jsonproductlist = $serializer->serialize($data, 'json');
         $response = new JsonResponse($jsonproductlist, Response::HTTP_OK, [], true);
 
         $response->setPublic();
@@ -72,7 +85,12 @@ class ProductController extends AbstractController
     #[Route('api/products/{id}', name: 'app_product_id', methods: ['GET'])]
     public function getProductById(Product $product, SerializerInterface $serializer): JsonResponse
     {
-        $jsonProduct = $serializer->serialize($product, 'json');
+        $data = $this->hateoas->addLinks($product, [
+            'self' => ['name' => 'app_product_id', 'params' => ['id' => $product->getId()]],
+            'list' => ['name' => 'app_product']
+        ]);
+
+        $jsonProduct = $serializer->serialize($data, 'json');
         $response = new JsonResponse($jsonProduct, Response::HTTP_OK, [], true);
 
         $response->setPublic();
@@ -135,7 +153,12 @@ class ProductController extends AbstractController
 
         $entityManager->flush();
 
-        $jsonProduct = $serializer->serialize($product, 'json');
+        $response = $this->hateoas->addLinks($product, [
+            'self' => ['name' => 'app_product_id', 'params' => ['id' => $product->getId()]],
+            'list' => ['name' => 'app_product']
+        ]);
+
+        $jsonProduct = $serializer->serialize($response, 'json');
         $response = new JsonResponse($jsonProduct, Response::HTTP_OK, [], true);
 
         $response->setPublic();
@@ -180,7 +203,7 @@ class ProductController extends AbstractController
      * @OA\Tag(name="Product")
      * @Security(name="Bearer")
      */
-    #[Route('api/createproduct', name: 'app_product_create', methods: ['GET'])]
+    #[Route('api/createproduct', name: 'app_product_create', methods: ['POST'])]
     public function createProduct(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManager): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -201,7 +224,12 @@ class ProductController extends AbstractController
         $entityManager->persist($product);
         $entityManager->flush();
 
-        $jsonProduct = $serializer->serialize($product, 'json');
+        $response = $this->hateoas->addLinks($product, [
+            'self' => ['name' => 'app_product_id', 'params' => ['id' => $product->getId()]],
+            'list' => ['name' => 'app_product']
+        ]);
+
+        $jsonProduct = $serializer->serialize($response, 'json');
         $response = new JsonResponse($jsonProduct, Response::HTTP_CREATED, [], true);
 
         $response->setPublic();
