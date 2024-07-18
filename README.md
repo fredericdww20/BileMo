@@ -55,7 +55,11 @@ Pour installer et exécuter le projet localement, suivez ces étapes :
    ```bash
    php bin/console doctrine:migrations:migrate
 
-6. Démarrez le serveur local :
+6. Chargez les fixtures de données :
+   ```bash
+   php bin/console doctrine:fixtures:load
+
+7. Démarrez le serveur local :
    ```bash
    symfony server:start
 
