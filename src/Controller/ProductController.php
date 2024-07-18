@@ -41,7 +41,10 @@ class ProductController extends AbstractController
     #[Route('api/products', name: 'app_product', methods: ['GET'])]
     public function getAllProduct(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
     {
+        // Récupère la liste de tous les produits
         $productlist = $productRepository->getAllProduct();
+        
+        // Ajoute des liens HATEOAS à chaque produit de la liste
         $data = array_map(function($product) {
             return $this->hateoas->addLinks($product, [
                 'self' => ['name' => 'app_product_id', 'params' => ['id' => $product->getId()]],
@@ -49,9 +52,13 @@ class ProductController extends AbstractController
             ]);
         }, $productlist);
 
+        // Sérialise les données en format JSON
         $jsonproductlist = $serializer->serialize($data, 'json');
+        
+        // Crée une réponse JSON avec les données sérialisées
         $response = new JsonResponse($jsonproductlist, Response::HTTP_OK, [], true);
 
+        // Définit la réponse comme publique et définit la durée de mise en cache à 3600 secondes
         $response->setPublic();
         $response->setMaxAge(3600);
 
@@ -85,14 +92,17 @@ class ProductController extends AbstractController
     #[Route('api/products/{id}', name: 'app_product_id', methods: ['GET'])]
     public function getProductById(Product $product, SerializerInterface $serializer): JsonResponse
     {
+        // Ajoute des liens HATEOAS au produit
         $data = $this->hateoas->addLinks($product, [
             'self' => ['name' => 'app_product_id', 'params' => ['id' => $product->getId()]],
             'list' => ['name' => 'app_product']
         ]);
 
+        // Sérialise les données en format JSON
         $jsonProduct = $serializer->serialize($data, 'json');
         $response = new JsonResponse($jsonProduct, Response::HTTP_OK, [], true);
 
+        // Définit la réponse comme publique et définit la durée de mise en cache à 3600 secondes
         $response->setPublic();
         $response->setMaxAge(3600);
 
@@ -137,12 +147,15 @@ class ProductController extends AbstractController
     #[Route('api/products/{id}', name: 'app_product_update', methods: ['PUT'])]
     public function updateProduct(Request $request, Product $product, SerializerInterface $serializer, EntityManagerInterface $entityManager): JsonResponse
     {
+        // Récupère les données de la requête
         $data = json_decode($request->getContent(), true);
 
+        // Vérifie si les données sont valides
         if (!is_array($data)) {
             return new JsonResponse(['error' => 'Invalid JSON body.'], Response::HTTP_BAD_REQUEST);
         }
 
+        // Met à jour les attributs du produit
         $product->setModele($data['modele'] ?? null);
         $product->setMarque($data['marque'] ?? null);
         $product->setPrix($data['prix'] ?? null);
@@ -153,18 +166,22 @@ class ProductController extends AbstractController
 
         $entityManager->flush();
 
+        // Ajoute des liens HATEOAS au produit
         $response = $this->hateoas->addLinks($product, [
             'self' => ['name' => 'app_product_id', 'params' => ['id' => $product->getId()]],
             'list' => ['name' => 'app_product']
         ]);
 
+        // Sérialise les données en format JSON
         $jsonProduct = $serializer->serialize($response, 'json');
         $response = new JsonResponse($jsonProduct, Response::HTTP_OK, [], true);
 
+        // Définit la réponse comme publique et définit la durée de mise en cache à 3600 secondes
         $response->setPublic();
         $response->setMaxAge(3600);
 
-        return $response;
+         // Retourne une réponse JSON avec un code d'état HTTP 200
+        return new JsonResponse(['message' => 'Produit mis à jour avec succès'], Response::HTTP_OK);
     }
 
 
@@ -206,12 +223,15 @@ class ProductController extends AbstractController
     #[Route('api/products', name: 'app_product_create', methods: ['POST'])]
     public function createProduct(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManager): JsonResponse
     {
+        // Récupère les données de la requête
         $data = json_decode($request->getContent(), true);
 
+        // Vérifie si les données sont valides
         if (!is_array($data)) {
             return new JsonResponse(['error' => 'Invalid JSON body.'], Response::HTTP_BAD_REQUEST);
         }
 
+        // Crée un nouveau produit
         $product = new Product();
         $product->setModele($data['modele'] ?? null);
         $product->setMarque($data['marque'] ?? null);
@@ -224,18 +244,20 @@ class ProductController extends AbstractController
         $entityManager->persist($product);
         $entityManager->flush();
 
+        //  Ajoute des liens HATEOAS au produit
         $response = $this->hateoas->addLinks($product, [
             'self' => ['name' => 'app_product_id', 'params' => ['id' => $product->getId()]],
             'list' => ['name' => 'app_product']
         ]);
 
+        // Sérialise les données en format JSON
         $jsonProduct = $serializer->serialize($response, 'json');
         $response = new JsonResponse($jsonProduct, Response::HTTP_CREATED, [], true);
 
         $response->setPublic();
         $response->setMaxAge(3600);
 
-        return $response;
+        return new JsonResponse(['message' => 'Produit créé avec succès'], Response::HTTP_OK);
     }
 
      /**
@@ -274,11 +296,20 @@ class ProductController extends AbstractController
      * @Security(name="Bearer")
      */
     #[Route('api/products/{id}', name: 'app_product_delete', methods: ['DELETE'])]
-    public function deleteProduct(Product $product, EntityManagerInterface $entityManager): JsonResponse
+    public function deleteProduct(int $id, EntityManagerInterface $entityManager): JsonResponse
     {
+        // Récupère le produit par son ID
+        $product = $entityManager->getRepository(Product::class)->find($id);
+
+        // Vérifie si le produit existe
+        if (!$product) {
+            return new JsonResponse(['error' => 'Produit non enregistré.'], Response::HTTP_NOT_FOUND);
+        }
+
         $entityManager->remove($product);
         $entityManager->flush();
-
-        return new JsonResponse(null, Response::HTTP_NO_CONTENT);
+        
+        // Affiche un message de validation
+        return new JsonResponse(['message' => 'Produit supprimé avec succès.'], Response::HTTP_OK);
     }
 }
