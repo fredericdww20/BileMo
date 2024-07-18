@@ -82,9 +82,10 @@ Les diagrammes sont disponibles à la racine du projet dans le dossier diagramme
 ## Utilisation des DataFixtures
 Les DataFixtures sont utilisées pour peupler la base de données avec des données de test. Pour charger les fixtures de données, exécutez la commande suivante :
 
-bash
+```bash
 Copier le code
 php bin/console doctrine:fixtures:load
+
 Cela remplira la base de données avec des produits, des utilisateurs et d'autres données nécessaires pour les tests et le développement.
 
 
