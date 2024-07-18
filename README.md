@@ -5,6 +5,8 @@
 - [Besoins du client](#besoins-du-client)
 - [Instructions d'installation](#instructions-dinstallation)
 - [Documentation de l'API](#documentation-de-lapi)
+- [Diagrammes UML](#diagrammes-uml)
+- [Tests avec Postman](#tests-avec-postman)
 - [Licence](#licence)
   
 ## Description du projet
@@ -68,6 +70,18 @@ Les endpoints pour consulter les détails des produits
 Les endpoints pour gérer les utilisateurs
 Les méthodes d'authentification
 Pour plus de détails sur l'utilisation de l'API, veuillez consulter le lien de la documentation fourni ci-dessus.
+
+## Diagrammes-uml
+Les diagrammes sont disponibles à la racine du projet dans le dossier diagrammes.
+
+## Tests avec Postman
+Les tests de l'API sont réalisés avec Postman. Vous pouvez importer la collection de requêtes Postman disponible dans le repository pour tester les différents endpoints de l'API. Cette collection inclut des exemples de requêtes pour :
+
+Lister les produits
+Consulter les détails d'un produit
+Ajouter un utilisateur
+Supprimer un utilisateur
+Pour importer la collection dans Postman :
 
 ## Licence
 Ce projet est sous licence MIT. Voir le fichier LICENSE pour plus de détails.
