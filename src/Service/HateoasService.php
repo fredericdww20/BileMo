@@ -14,6 +14,13 @@ class HateoasService
         $this->router = $router;
     }
 
+    /**
+     * Ajoute des liens aux données de l'entité.
+     *
+     * @param mixed $entity L'entité à laquelle ajouter des liens.
+     * @param array $links Un tableau de liens à ajouter.
+     * @return array Les données de l'entité modifiées avec les liens ajoutés.
+     */
     public function addLinks($entity, array $links): array
     {
         $data = [
