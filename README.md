@@ -84,7 +84,7 @@ Les DataFixtures sont utilisées pour peupler la base de données avec des donn�
 
 ```bash
 php bin/console doctrine:fixtures:load
-```bash
+```
 Cela remplira la base de données avec des produits, des utilisateurs et d'autres données nécessaires pour les tests et le développement.
 
 
