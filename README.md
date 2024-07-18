@@ -6,6 +6,7 @@
 - [Instructions d'installation](#instructions-dinstallation)
 - [Documentation de l'API](#documentation-de-lapi)
 - [Diagrammes UML](#diagrammes-uml)
+- [Utilisation des DataFixtures](#utilisation-des-datafixtures)
 - [Tests avec Postman](#tests-avec-postman)
 - [Licence](#licence)
   
@@ -77,6 +78,15 @@ Pour plus de détails sur l'utilisation de l'API, veuillez consulter le lien de 
 
 ## Diagrammes-uml
 Les diagrammes sont disponibles à la racine du projet dans le dossier diagrammes.
+
+## Utilisation des DataFixtures
+Les DataFixtures sont utilisées pour peupler la base de données avec des données de test. Pour charger les fixtures de données, exécutez la commande suivante :
+
+bash
+Copier le code
+php bin/console doctrine:fixtures:load
+Cela remplira la base de données avec des produits, des utilisateurs et d'autres données nécessaires pour les tests et le développement.
+
 
 ## Tests avec Postman
 Les tests de l'API sont réalisés avec Postman. Vous pouvez importer la collection de requêtes Postman disponible dans la documentation pour tester les différents endpoints de l'API. Cette collection inclut des exemples de requêtes pour :
