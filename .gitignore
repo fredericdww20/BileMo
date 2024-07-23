@@ -8,6 +8,8 @@
 /var/
 /vendor/
 /migrations/
+.env.test
+.env
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###
