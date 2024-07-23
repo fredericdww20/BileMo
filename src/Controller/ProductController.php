@@ -12,6 +12,7 @@ use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Knp\Component\Pager\PaginatorInterface;
 
 
 
@@ -39,29 +40,52 @@ class ProductController extends AbstractController
      * @OA\Tag(name="Product")
      */
     #[Route('api/products', name: 'app_product', methods: ['GET'])]
-    public function getAllProduct(ProductRepository $productRepository, SerializerInterface $serializer): JsonResponse
+    public function getAllProduct(Request $request, ProductRepository $productRepository, SerializerInterface $serializer, PaginatorInterface $paginator): JsonResponse
     {
-        // Récupère la liste de tous les produits
-        $productlist = $productRepository->getAllProduct();
-        
+        // Récupère la page actuelle et le nombre d'éléments par page à partir de la requête
+        $page = max(1, $request->query->getInt('page', 1));
+        $limit = max(1, $request->query->getInt('limit', 10));
+    
+        // Crée une requête pour récupérer tous les produits
+        $queryBuilder = $productRepository->createQueryBuilder('p');
+        $query = $queryBuilder->getQuery();
+    
+        // Utilise le pagineur pour paginer les résultats
+        $pagination = $paginator->paginate(
+            $query,
+            $page,
+            $limit
+        );
+    
         // Ajoute des liens HATEOAS à chaque produit de la liste
         $data = array_map(function($product) {
-            return $this->hateoas->addLinks($product, [
-                'self' => ['name' => 'app_product_id', 'params' => ['id' => $product->getId()]],
-                'list' => ['name' => 'app_product']
-            ]);
-        }, $productlist);
-
+            return [
+                'data' => $product,
+                'links' => [
+                    'self' => $this->generateUrl('app_product_id', ['id' => $product->getId()]),
+                    'list' => $this->generateUrl('app_product')
+                ]
+            ];
+        }, $pagination->getItems());
+    
+        // Prépare les données pour la réponse JSON
+        $responseData = [
+            'items' => $data,
+            'total' => $pagination->getTotalItemCount(),
+            'current_page' => $pagination->getCurrentPageNumber(),
+            'total_pages' => $pagination->getPaginationData()['pageCount']
+        ];
+    
         // Sérialise les données en format JSON
-        $jsonproductlist = $serializer->serialize($data, 'json');
-        
+        $jsonProductList = $serializer->serialize($responseData, 'json');
+    
         // Crée une réponse JSON avec les données sérialisées
-        $response = new JsonResponse($jsonproductlist, Response::HTTP_OK, [], true);
-
+        $response = new JsonResponse($jsonProductList, JsonResponse::HTTP_OK, [], true);
+    
         // Définit la réponse comme publique et définit la durée de mise en cache à 3600 secondes
         $response->setPublic();
         $response->setMaxAge(3600);
-
+    
         return $response;
     }
 

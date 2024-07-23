@@ -18,6 +18,7 @@ use Symfony\Component\Serializer\Normalizer\AbstractNormalizer;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use OpenApi\Annotations as OA;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
+use Knp\Component\Pager\PaginatorInterface;
 
 
 class UserController extends AbstractController
@@ -45,59 +46,85 @@ class UserController extends AbstractController
      * @OA\Tag(name="User")
      */
     #[Route('/api/client/{clientId}', name: 'listForClient', methods: ['GET'])]
-    public function listForClient(int $clientId, UserRepository $userRepository, SerializerInterface $serializer): Response
-    {
-        // Récupérer l'utilisateur actuel
-        $currentClient = $this->getUser();
-        if (!$currentClient instanceof Client) {
-            return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_UNAUTHORIZED);
-        }
-
-        // Vérifier si l'utilisateur actuel est le propriétaire du client
-        if ($currentClient->getId() !== $clientId) {
-            return new JsonResponse(['error' => 'Accès interdit'], Response::HTTP_FORBIDDEN);
-        }
-
-        // Récupérer les utilisateurs du client
-        $users = $userRepository->findBy(['client' => $clientId]);
-
-        // Vérifier si aucun utilisateur n'a été trouvé
-        if (empty($users)) {
-            return new JsonResponse(['error' => 'Aucun utilisateur correspondant'], Response::HTTP_NOT_FOUND);
-        }
-
-        // Utiliser le sérialiseur pour convertir les objets en chaînes JSON
-        $context = [
-            AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
-                return $object->getId();
-            },
-            'groups' => ['client_users'],
-            'json_encode_options' => JSON_PRETTY_PRINT
-        ];
-
-        // Convertir les objets en chaînes JSON
-        $jsonUsers = $serializer->serialize($users, 'json', $context);
-
-        // Convertir les chaînes JSON en tableaux PHP
-        $userData = json_decode($jsonUsers, true);
-
-        // Ajouter des liens HATEOAS aux données utilisateur
-        $data = array_map(function($user) use ($currentClient) {
-            return $this->hateoas->addLinks($user, [
-                'self' => ['name' => 'detailUser', 'params' => ['id' => $user['id']]],
-                'list' => ['name' => 'listForClient', 'params' => ['clientId' => $currentClient->getId()]]
-            ]);
-        }, $userData);
-
-        // Retourner une réponse JSON
-        $response = [
-            'message' => 'Succès, voici la liste des utilisateurs',
-            'data' => $data
-        ];
-
-        // Retourner une réponse JSON avec un code d'état HTTP 200
-        return new JsonResponse($response, Response::HTTP_OK);
+    public function listForClient(int $clientId, UserRepository $userRepository, SerializerInterface $serializer, PaginatorInterface $paginator, Request $request): Response
+{
+    // Récupérer l'utilisateur actuel
+    $currentClient = $this->getUser();
+    if (!$currentClient instanceof Client) {
+        return new JsonResponse(['error' => 'Accès refusé'], Response::HTTP_UNAUTHORIZED);
     }
+
+    // Vérifier si l'utilisateur actuel est le propriétaire du client
+    if ($currentClient->getId() !== $clientId) {
+        return new JsonResponse(['error' => 'Accès interdit'], Response::HTTP_FORBIDDEN);
+    }
+
+    // Récupérer la page actuelle et le nombre d'éléments par page à partir de la requête
+    $page = max(1, $request->query->getInt('page', 1));
+    $limit = max(1, $request->query->getInt('limit', 10));
+
+    // Crée une requête pour récupérer tous les utilisateurs du client
+    $queryBuilder = $userRepository->createQueryBuilder('u')
+        ->where('u.client = :clientId')
+        ->setParameter('clientId', $clientId)
+        ->getQuery();
+
+    // Utiliser le pagineur pour paginer les résultats
+    $pagination = $paginator->paginate(
+        $queryBuilder,
+        $page,
+        $limit
+    );
+
+    // Vérifier si aucun utilisateur n'a été trouvé
+    if (empty($pagination->getItems())) {
+        return new JsonResponse(['error' => 'Aucun utilisateur correspondant'], Response::HTTP_NOT_FOUND);
+    }
+
+    // Utiliser le sérialiseur pour convertir les objets en chaînes JSON
+    $context = [
+        AbstractNormalizer::CIRCULAR_REFERENCE_HANDLER => function ($object) {
+            return $object->getId();
+        },
+        'groups' => ['client_users'],
+        'json_encode_options' => JSON_PRETTY_PRINT
+    ];
+
+    // Convertir les objets en chaînes JSON
+    $jsonUsers = $serializer->serialize($pagination->getItems(), 'json', $context);
+
+    // Convertir les chaînes JSON en tableaux PHP
+    $userData = json_decode($jsonUsers, true);
+
+    // Ajouter des liens HATEOAS aux données utilisateur
+    $data = array_map(function($user) use ($currentClient) {
+        return $this->hateoas->addLinks($user, [
+            'self' => ['name' => 'detailUser', 'params' => ['id' => $user['id']]],
+            'list' => ['name' => 'listForClient', 'params' => ['clientId' => $currentClient->getId()]]
+        ]);
+    }, $userData);
+
+    // Générer les liens de pagination
+    $paginationData = [
+        'first' => $this->generateUrl('listForClient', ['clientId' => $clientId, 'page' => 1, 'limit' => $limit], true),
+        'last' => $this->generateUrl('listForClient', ['clientId' => $clientId, 'page' => $pagination->getPaginationData()['pageCount'], 'limit' => $limit], true),
+        'next' => $page < $pagination->getPaginationData()['pageCount'] ? $this->generateUrl('listForClient', ['clientId' => $clientId, 'page' => $page + 1, 'limit' => $limit], true) : null,
+        'previous' => $page > 1 ? $this->generateUrl('listForClient', ['clientId' => $clientId, 'page' => $page - 1, 'limit' => $limit], true) : null,
+    ];
+
+    // Préparer les données pour la réponse JSON
+    $responseData = [
+        'message' => 'Succès, voici la liste des utilisateurs',
+        'data' => $data,
+        'total' => $pagination->getTotalItemCount(),
+        'current_page' => $pagination->getCurrentPageNumber(),
+        'total_pages' => $pagination->getPaginationData()['pageCount'],
+        'pagination' => $paginationData,
+    ];
+
+    // Retourner une réponse JSON avec un code d'état HTTP 200
+    return new JsonResponse($responseData, Response::HTTP_OK);
+}
 
     /**
      * Crée un nouvel utilisateur.
